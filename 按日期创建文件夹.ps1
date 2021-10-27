@@ -1,10 +1,16 @@
-﻿$date = Get-Date 2021.10.01
+﻿
+$date = Get-Date (Read-Host -Prompt '开始日期（例2021.10.01）')
+$end  = Get-Date (Read-Host -Prompt '截止日期')
+$days = ($end-$start).Days+1
 
-for($E=0; $date -lt (Get-Date 2021.12.31); $E++){
-    $date = (Get-Date 2021.10.01).AddDays($E)
-    $yea = '{0:d4}'-f $date.Year
-    $mon = '{0:d2}'-f $date.Month
-    $day = '{0:d2}'-f $date.Day
-    $nam = $yea+'.'+$mon+'.'+$day
-    New-Item -ItemType Directory .\$yea'年'\$mon'月'\$nam
-}
+do{
+    $year  = '{0:d4}'-f $date.Year
+    $month = '{0:d2}'-f $date.Month
+    $day   = '{0:d2}'-f $date.Day
+    $name  = $year+'.'+$month+'.'+$day
+    New-Item -ItemType Directory .\$year'年'\$month'月'\$name
+    $date  = $date.AddDays(1)
+
+}while($date -le $end)
+
+Write-Host "`n 创建完成！共$($days)个文件夹。" -ForegroundColor Yellow
