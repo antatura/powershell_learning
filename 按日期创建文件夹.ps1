@@ -1,7 +1,7 @@
 ﻿
 $date = Get-Date (Read-Host -Prompt '开始日期（例2021.10.01）')
 $end  = Get-Date (Read-Host -Prompt '截止日期')
-$days = ($end-$start).Days+1
+$days = ($end-$date).Days+1
 
 do{
     $year  = '{0:d4}'-f $date.Year
