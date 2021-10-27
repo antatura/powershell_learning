@@ -14,3 +14,5 @@ do{
 }while($date -le $end)
 
 Write-Host "`n 创建完成！共$($days)个文件夹。" -ForegroundColor Yellow
+
+Read-Host -Prompt 'Press enter to exit'
