@@ -30,5 +30,13 @@ Get-Item *.cer | Import-Certificate -CertStoreLocation Cert:\LocalMachine\Disall
 (New-Object -ComObject Shell.Application).NameSpace('F:\').CopyHere('D:\Source.txt',8)
 ```
 
-> https://docs.microsoft.com/zh-cn/windows/win32/shell/folder-copyhere
+> https://docs.microsoft.com/zh-cn/windows/win32/shell/folder-copyhere  
+
+- **任务计划程序**
+
+```
+mshta vbscript:Execute("CreateObject(""WScript.Shell"").Run ""powershell & 'F:\script.ps1'"", 0:close")
+```
+
+
 
