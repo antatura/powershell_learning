@@ -24,3 +24,11 @@ Get-CimInstance -ClassName Win32_Product | Sort-Object -Property InstallDate | F
 Get-Item *.cer | Import-Certificate -CertStoreLocation Cert:\LocalMachine\Disallowed\ -whatif
 ```
 
+- **复制（移动）文件（夹），并显示Windows进度条**
+
+```
+(New-Object -ComObject Shell.Application).NameSpace('F:\').CopyHere('D:\Source.txt',8)
+```
+
+> https://docs.microsoft.com/zh-cn/windows/win32/shell/folder-copyhere
+
