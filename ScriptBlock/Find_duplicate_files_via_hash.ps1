@@ -14,8 +14,13 @@
 # Web: https://sid-500.com/2020/04/26/find-duplicate-files-with-powershell/
 
 ############# Find Duplicate Files based on Hash Value ###############
+
+
+
+
+
 ''
-$filepath = Read-Host 'Enter file path for searching duplicate files (e.g. C:\Temp, C: )'
+$filepath = Read-Host 'Enter file path for searching duplicate files ( e.g. C:\Temp, C: )'
 
 If (Test-Path $filepath) {
 ''
