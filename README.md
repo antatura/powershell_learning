@@ -18,7 +18,7 @@ Get-CimInstance -ClassName Win32_Product | Sort-Object -Property InstallDate | F
 (New-Object -ComObject wscript.shell).Popup('A Question?',0,'A Title',3)
 ```
 
-- **批量拉黑证书**
+- **批量拉黑证书(Administrator)**
 
 ```
 Get-Item *.cer | Import-Certificate -CertStoreLocation Cert:\LocalMachine\Disallowed\ -whatif
