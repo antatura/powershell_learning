@@ -4,4 +4,4 @@ Windows Registry Editor Version 5.00
 "MUIVerb"="Export-Certificate"
 
 [HKEY_CLASSES_ROOT\*\shell\Export-Certificate\command]
-@="Powershell Get-AuthenticodeSignature \\\"%1\\\" | select -ExpandProperty SignerCertificate | Export-Certificate -FilePath ((Get-Date).Ticks.ToString()+'.cer')"
+@="Powershell Get-AuthenticodeSignature \\\"%1\\\" | select -ExpandProperty SignerCertificate | Export-Certificate -FilePath ((Get-Random).ToString()+'.cer')"
