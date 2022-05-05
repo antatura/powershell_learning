@@ -21,6 +21,10 @@ Get-CimInstance -ClassName Win32_Product | Sort-Object -Property InstallDate | F
 - **批量拉黑证书(Administrator)**
 
 ```
+Get-ChildItem *.exe -Recurse |% {Get-AuthenticodeSignature $_ | select -ExpandProperty SignerCertificate | Export-Certificate -FilePath ($_.BaseName+'.cer')}
+```
+
+```
 Get-Item *.cer | Import-Certificate -CertStoreLocation Cert:\LocalMachine\Disallowed\ -whatif
 ```
 
