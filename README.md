@@ -18,7 +18,7 @@ Get-CimInstance -ClassName Win32_Product | Sort-Object -Property InstallDate | F
 (New-Object -ComObject wscript.shell).Popup('A Question?',0,'A Title',3)
 ```
 
-- **批量拉黑证书(Administrator)**
+- **批量拉黑证书(Administrator)(Windows 8+++ Powershell Desktop)**
 
 ```
 Get-ChildItem *.exe -Recurse | % {Get-AuthenticodeSignature $_ | select -ExpandProperty SignerCertificate | Export-Certificate -FilePath ($_.BaseName+'.cer')}
