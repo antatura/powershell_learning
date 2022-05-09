@@ -24,6 +24,8 @@ Get-CimInstance -ClassName Win32_Product | Sort-Object -Property InstallDate | F
 Get-ChildItem *.exe -Recurse | % {Get-AuthenticodeSignature $_ | select -ExpandProperty SignerCertificate | Export-Certificate -FilePath ($_.BaseName+'.cer')}
 ```
 
+> 若可执行文件中有多枚证书，仅能提取第一枚
+
 ```
 Get-Item *.cer | Import-Certificate -CertStoreLocation Cert:\LocalMachine\Disallowed\ -whatif
 ```
