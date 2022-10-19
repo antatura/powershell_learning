@@ -1,11 +1,11 @@
 ﻿
-$video = $args[0]
+$video = Resolve-Path $args[0]
 
-$W = [int](Read-Host "[int]Pixel width of the final tiles")    # 最终合成图的像素宽度
+$W = [int](Read-Host "[int]Pixel width of the final tiles")    # 指定最终合成图的像素宽度
 
-$X = [int](Read-Host "[int]X-COLUMNS")    # 横向贴片数量
+$X = [int](Read-Host "[int]X-COLUMNS")    # 指定横向贴片数量
 
-$Y = [int](Read-Host "[int]Y-ROWS")    # 纵向贴片数量
+$Y = [int](Read-Host "[int]Y-ROWS")    # 指定纵向贴片数量
 
 $XY = $X*$Y
 
