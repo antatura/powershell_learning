@@ -1,51 +1,133 @@
-﻿
-$Video = Resolve-Path $args[0]
+﻿param
+(
+    $Video,
+    [ValidateSet("JPEG-91", "PNG", "WebP-lossless", "Tile")]$Mode,
+    [int]$Width=3840,
+    [int]$X=4,
+    [int]$Y=4,
+    [switch]$Timestamp,
+    [switch]$help
+)
 
-$W = [int](Read-Host "[int]Pixel width of the final tiles")    # 指定最终合成图的像素宽度
 
-$X = [int](Read-Host "[int]X-COLUMNS")    # 指定横向贴片数量
 
-$Y = [int](Read-Host "[int]Y-ROWS")    # 指定纵向贴片数量
+if ($help -or !($Mode) -or !($Video))
+{
+    Write-Host -ForegroundColor Green " Example:     CaptureOut.ps1 -Video INPUT.mp4 -Mode PNG,Tile
+                                     `r -----------------------------------------------------------
+                                     `r -Video:      Video's path
+                                     `r -Mode:       JPEG-91, PNG, WebP-lossless, Tile
+                                     `r -Timestamp:  Show timestamp in the lower left corner
+                                     `r -Width:      Pixel width of the final tile (Default: 3840)
+                                     `r -X:          X-COLUMNS (Default: 4)
+                                     `r -Y:          Y-ROWS (Default: 4)"
+    Break
+}
+
+
+
+$Video_FullName = Resolve-Path $Video
 
 $XY = $X*$Y
 
-$ASCII = ($args[0] -replace '[^a-zA-Z0-9_.+-]').TrimStart('.')    # 仅保留部分ASCII字符
+$ASCII = ((Split-Path $Video_FullName -Leaf).Replace(' ','_') -replace '[^a-zA-Z0-9_.-]').Trim('.')    # 仅保留部分ASCII字符
 
-$Duration = [int](ffprobe -v 16 -show_entries format=duration -of csv=p=0 $Video)    # 获取视频时长
+$Duration = [double](ffprobe -v 16 -select_streams v:0 -show_entries format=duration -of default=nk=1:nw=1 $Video_FullName)    # 获取视频时长
 
-$Stream_info = [string](ffprobe -v error -select_streams v:0 -show_streams $Video)    # 获取流信息用以判断HDR
+$W = [int](ffprobe -v 16 -select_streams v:0 -show_entries stream=width -of default=nk=1:nw=1 $Video_FullName)
 
-$HDR = "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv"
+$Frame_info = ffmpeg -i $Video_FullName -frames:v 1 -vf showinfo -f null - *>&1 | % {"$_"}    # 获取第一帧信息用以判断 Dolby Vision 或 HDR
+
+if ($Frame_info -match 'Dolby Vision RPU Data')
+{
+    if (!($Frame_info -match 'Jellyfin'))
+    {
+        Write-Warning "This is a Dolby Vision video.`nRequirement: https://github.com/jellyfin/jellyfin-ffmpeg/releases "
+        Break
+    }
+}
+
+$HDR_Filter = "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=rgb24"
+$DoVi_Filter = "hwupload,tonemap_opencl=tonemap=bt2390:desat=0:peak=100:format=nv12,hwdownload,format=nv12"
+$vf = "-vf"
+
+
+
 
 
 for ($A=1; $A -le $XY; $A++) 
 {
-    $T = "{0:D3}" -f $A
-    
+    $D3 = "{0:D3}" -f $A
     $SS = $A*$Duration/($XY+1)
+    $SS_f = "{0:hh\.mm\.ss\.\.fff}" -f [timespan]::fromseconds($SS)
+    $FF_SS = "{0:hh}\\:{0:mm}\\:{0:ss}.{0:fff}" -f [timespan]::fromseconds($SS)
+    $TEXT_Filter = "drawtext=fontfile=C\\:/Windows/fonts/consola.ttf:text=$($FF_SS):x=H/50:y=H-th-x:fontsize=H/25:box=1:boxcolor=Black:fontcolor=White:boxborderw=5"
 
-    $SS_f = "{0:hh\.mm\.ss\.fff}" -f [timespan]::fromseconds($SS)
-
-
-    if ($Stream_info.Contains('bt2020'))    # 根据流信息中包含bt2020判断HDR视频
+    if ($Timestamp -and ($Frame_info -match 'bt2020'))
     {
-        ffmpeg -y -stats -v 16 -ss $SS -i $Video -vf $HDR -frames:v 1 -pred 2 F:\Capture_$T.png
+        $Filters = $HDR_Filter + ',' + $TEXT_Filter
+    }
+    elseif ($Timestamp -and ($Frame_info -match 'Dolby Vision RPU Data'))
+    {
+        $Filters = $DoVi_Filter + ',' + $TEXT_Filter
+        $HW = '-init_hw_device'
+        $Opencl = 'opencl:0'
+    }
+    elseif ($Timestamp)
+    {
+        $Filters = $TEXT_Filter
+    }
+    elseif ($Frame_info -match 'bt2020')
+    {
+        $Filters = $HDR_Filter
+    }
+    elseif ($Frame_info -match 'Dolby Vision RPU Data')
+    {
+        $Filters = $DoVi_Filter
+        $HW = '-init_hw_device'
+        $Opencl = 'opencl:0'
     }
     else
     {
-        ffmpeg -y -stats -v 16 -ss $SS -i $Video -frames:v 1 -pred 2 F:\Capture_$T.png
+        Clear-Variable vf
+    }
+    ffmpeg -y -v 16 $HW $Opencl -ss $SS -i $Video_FullName -frames:v 1 $vf $Filters -pred 2 $env:TEMP\$ASCII'__'$D3.png
+    
+
+
+    if ("PNG" -in $Mode)
+    {
+        Copy-Item $env:TEMP\$ASCII'__'$D3.png -Destination F:\$ASCII'__'$SS_f.png
+        Write-Host "$($XY-$A)  F:\$($ASCII)__$SS_f.png" -ForegroundColor DarkCyan
     }
 
+    if ("JPEG-91" -in $Mode)
+    {
+        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.png -q 2 -pix_fmt yuvj420p F:\$ASCII'__'$SS_f.jpg
+        Write-Host "$($XY-$A)  F:\$($ASCII)__$SS_f.jpg" -ForegroundColor DarkBlue
+    }
 
-    ffmpeg -y -stats -v 16 -i F:\Capture_$T.png -q 2 -pix_fmt yuvj420p F:\$ASCII--$ss_f.jpg    # PNG 转 JPG（质量91）
+    if ("WebP-lossless" -in $Mode)
+    {
+        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.png -lossless 1 F:\$ASCII'__'$SS_f.webp
+        Write-Host "$($XY-$A)  F:\$($ASCII)__$SS_f.webp" -ForegroundColor DarkMagenta
+    }
+    
+}
+    
+if ("Tile" -in $Mode)
+{
+    $Width = [math]::Min(($W+8)*$X-8,$Width)
 
+    ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'%3d.png -vf "tile=layout=$($X)x$($Y):padding=8,scale=$($Width):-2"  -q 2 -pix_fmt yuvj420p F:\Tile_$ASCII.jpg
+    # 可调整贴片边距padding，默认8px
+
+    Write-Host "F:\Tile_$ASCII.jpg" -ForegroundColor DarkGreen
 }
 
 
-ffmpeg -y -stats -v 16 -i F:\Capture_%3d.png -vf tile=$($X)x$($Y):padding=8,scale=$($W):-2  -q 2 -pix_fmt yuvj420p F:\TILES_$ASCII.jpg
-# 可调整贴片边距padding，默认8px
+
+Remove-Item $env:TEMP\$ASCII'__'*.png
 
 
-Del F:\Capture_*.png -Confirm
-Del F:\$ASCII-*.jpg -Confirm
-Del F:\TILES_$ASCII.jpg -Confirm
+
