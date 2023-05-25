@@ -39,7 +39,7 @@ for ($A=0; $A -lt $Gci.Count; $A++)
 {
     $VID = '{0:D5}' -f $A
     
-    $Stats = ffmpeg -v 16 -stats -hwaccel cuda -i $Gci[$A].FullName -map v -fps_mode cfr -stats_period 0.05 -f null - *>&1 |
+    $Stats = ffmpeg -v 16 -stats -hwaccel cuda -hwaccel_output_fotmat cuda -i $Gci[$A].FullName -map v -fps_mode cfr -stats_period 0.05 -f null - *>&1 |
              ForEach-Object {"$_"} 
 
 
