@@ -1,5 +1,16 @@
 # powershell_learning
 
+
+- **禁用日志 清除日志**
+
+```
+(ls -Path C:\Windows\System32\winevt\Logs -Filter Microsoft-Windows-*.evtx -Name) -Replace 'Microsoft-Windows','wevtutil sl "Microsoft-Windows' -Replace '%4','/' -Replace '.evtx','" /e:false' >disable.bat
+```
+
+```
+(ls -Path C:\Windows\System32\winevt\Logs -Filter Microsoft-Windows-*.evtx -Name) -Replace 'Microsoft-Windows','wevtutil cl "Microsoft-Windows' -Replace '%4','/' -Replace '.evtx','"' >clear.bat
+```
+
 - **查看30天以上的空文件夹**
 
 ```
