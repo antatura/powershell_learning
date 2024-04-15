@@ -46,7 +46,7 @@ for ($A=0; $A -lt $Stats.Count; $A++)
 {
     if($Stats[$A] -match 'pts_time')
     {
-        $pts_time = "{0:hh\:mm\:ss\.ffffff}" -f ($ss+[timespan]::FromSeconds($Stats[$A].Split('pts_time:')[-1]))
+        $pts_time = "{0:hh\:mm\:ss\.fff}" -f ($ss+[timespan]::FromSeconds($Stats[$A].Split('pts_time:')[-1]))
         $HashTable.Add($pts_time,$null)
     }
 
