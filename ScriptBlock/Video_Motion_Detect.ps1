@@ -11,7 +11,7 @@ if(!($Video))
     {
         Write-Host -ForegroundColor DarkGreen " Example: Video_Motion_Detect.ps1 -Video INPUT.mp4 -ss 30 -to 60
                                              `r -ss: Start-Timestamp(sec)[00:27:35.123456]
-                                             `r -to: Analytical-Duration(sec)[00:32:35]"
+                                             `r -to: End-Timestamp(sec)[00:32:35]"
         Break
     }
 
