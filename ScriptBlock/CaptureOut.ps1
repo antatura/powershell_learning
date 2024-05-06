@@ -34,7 +34,7 @@ $ASCII = ((Split-Path $Video_FullName -Leaf).Replace(' ','_') -replace '[^a-zA-Z
 
 $Duration = [double](ffprobe -v 16 -select_streams v:0 -show_entries format=duration -of default=nk=1:nw=1 $Video_FullName)    # 获取视频时长
 
-$W = [int](ffprobe -v 16 -select_streams v:0 -show_entries stream=width -of default=nk=1:nw=1 $Video_FullName)
+$W = [int](ffprobe -v 16 -select_streams v:0 -show_entries stream=width -of default=nk=1:nw=1 $Video_FullName)[0]
 
 $Frame_info = ffmpeg -i $Video_FullName -frames:v 1 -vf showinfo -f null - *>&1 | % {"$_"}    # 获取第一帧信息用以判断 Dolby Vision 或 HDR
 
