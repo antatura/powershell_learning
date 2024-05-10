@@ -120,7 +120,7 @@ if ("Tile" -in $Mode)
 {
     $Width = [math]::Min(($W+8)*$X-8,$Width)
 
-    ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'%3d.png -vf "tile=layout=$($X)x$($Y):padding=8,scale=$($Width):-2" -sws_flags accurate_rnd+full_chroma_int+bitexact -q 2 -pix_fmt yuvj420p D:\Tile_$ASCII.jpg
+    ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'%3d.png -vf "tile=layout=$($X)x$($Y):padding=8,scale=$($Width):-2:flags=accurate_rnd+full_chroma_int+bitexact" -q 2 -pix_fmt yuvj420p D:\Tile_$ASCII.jpg
     # 可调整贴片边距padding，默认8px
 
     Write-Host "D:\Tile_$ASCII.jpg" -ForegroundColor DarkGreen
