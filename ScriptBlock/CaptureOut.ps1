@@ -49,6 +49,7 @@ if ($Frame_info -match 'Dolby Vision RPU Data')
 
 $HDR_Filter = "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=rgb24"
 $DoVi_Filter = "hwupload,tonemap_opencl=tonemap=bt2390:desat=0:peak=100:format=nv12,hwdownload,format=nv12"
+$SDR2PNG_Filter = "zscale,format=gbrp,format=rgb24"
 $vf = "-vf"
 
 
@@ -75,7 +76,7 @@ for ($A=1; $A -le $XY; $A++)
     }
     elseif ($Timestamp)
     {
-        $Filters = $TEXT_Filter
+        $Filters = $SDR2PNG_Filter + ',' + $TEXT_Filter
     }
     elseif ($Frame_info -match 'bt2020')
     {
@@ -89,7 +90,7 @@ for ($A=1; $A -le $XY; $A++)
     }
     else
     {
-        Clear-Variable vf
+        $Filters = $SDR2PNG_Filter
     }
     ffmpeg -y -v 16 $HW $Opencl -ss $SS -i $Video_FullName -frames:v 1 $vf $Filters -pred 2 $env:TEMP\$ASCII'__'$D3.png
     
@@ -97,20 +98,20 @@ for ($A=1; $A -le $XY; $A++)
 
     if ("PNG" -in $Mode)
     {
-        Copy-Item $env:TEMP\$ASCII'__'$D3.png -Destination F:\$ASCII'__'$SS_f.png
-        Write-Host "$($XY-$A)  F:\$($ASCII)__$SS_f.png" -ForegroundColor DarkCyan
+        Copy-Item $env:TEMP\$ASCII'__'$D3.png -Destination D:\$ASCII'__'$SS_f.png
+        Write-Host "$($XY-$A)  D:\$($ASCII)__$SS_f.png" -ForegroundColor DarkCyan
     }
 
     if ("JPEG-91" -in $Mode)
     {
-        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.png -q 2 -pix_fmt yuvj420p F:\$ASCII'__'$SS_f.jpg
-        Write-Host "$($XY-$A)  F:\$($ASCII)__$SS_f.jpg" -ForegroundColor DarkBlue
+        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.png -sws_flags accurate_rnd+full_chroma_int+bitexact -q 2 -pix_fmt yuvj420p D:\$ASCII'__'$SS_f.jpg
+        Write-Host "$($XY-$A)  D:\$($ASCII)__$SS_f.jpg" -ForegroundColor DarkBlue
     }
 
     if ("WebP-lossless" -in $Mode)
     {
-        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.png -lossless 1 F:\$ASCII'__'$SS_f.webp
-        Write-Host "$($XY-$A)  F:\$($ASCII)__$SS_f.webp" -ForegroundColor DarkMagenta
+        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.png -lossless 1 D:\$ASCII'__'$SS_f.webp
+        Write-Host "$($XY-$A)  D:\$($ASCII)__$SS_f.webp" -ForegroundColor DarkMagenta
     }
     
 }
@@ -119,10 +120,10 @@ if ("Tile" -in $Mode)
 {
     $Width = [math]::Min(($W+8)*$X-8,$Width)
 
-    ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'%3d.png -vf "tile=layout=$($X)x$($Y):padding=8,scale=$($Width):-2"  -q 2 -pix_fmt yuvj420p F:\Tile_$ASCII.jpg
+    ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'%3d.png -vf "tile=layout=$($X)x$($Y):padding=8,scale=$($Width):-2" -sws_flags accurate_rnd+full_chroma_int+bitexact -q 2 -pix_fmt yuvj420p D:\Tile_$ASCII.jpg
     # 可调整贴片边距padding，默认8px
 
-    Write-Host "F:\Tile_$ASCII.jpg" -ForegroundColor DarkGreen
+    Write-Host "D:\Tile_$ASCII.jpg" -ForegroundColor DarkGreen
 }
 
 
