@@ -34,7 +34,7 @@ $ASCII = ((Split-Path $Video_FullName -Leaf).Replace(' ','_') -replace '[^a-zA-Z
 
 $Duration = [double](ffprobe -v 16 -select_streams v:0 -show_entries format=duration -of default=nk=1:nw=1 $Video_FullName)    # 获取视频时长
 
-$W = [int](ffprobe -v 16 -select_streams v:0 -show_entries stream=width -of default=nk=1:nw=1 $Video_FullName)[0]
+$W = ([array](ffprobe -v 16 -select_streams v:0 -show_entries stream=width -of default=nk=1:nw=1 $Video_FullName))[0]
 
 $Frame_info = ffmpeg -i $Video_FullName -frames:v 1 -vf showinfo -f null - *>&1 | % {"$_"}    # 获取第一帧信息用以判断 Dolby Vision 或 HDR
 
@@ -92,25 +92,25 @@ for ($A=1; $A -le $XY; $A++)
     {
         $Filters = $SDR2PNG_Filter
     }
-    ffmpeg -y -v 16 $HW $Opencl -ss $SS -i $Video_FullName -frames:v 1 $vf $Filters -pred 2 $env:TEMP\$ASCII'__'$D3.png
+    ffmpeg -y -v 16 $HW $Opencl -ss $SS -i $Video_FullName -frames:v 1 $vf $Filters $env:TEMP\$ASCII'__'$D3.bmp
     
 
 
     if ("PNG" -in $Mode)
     {
-        Copy-Item $env:TEMP\$ASCII'__'$D3.png -Destination D:\$ASCII'__'$SS_f.png
+        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.bmp -pred 2 D:\$ASCII'__'$SS_f.png
         Write-Host "$($XY-$A)  D:\$($ASCII)__$SS_f.png" -ForegroundColor DarkCyan
     }
 
     if ("JPEG-91" -in $Mode)
     {
-        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.png -sws_flags accurate_rnd+full_chroma_int+bitexact -q 2 -pix_fmt yuvj420p D:\$ASCII'__'$SS_f.jpg
+        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.bmp -sws_flags accurate_rnd+full_chroma_int+bitexact -q 2 -pix_fmt yuvj420p D:\$ASCII'__'$SS_f.jpg
         Write-Host "$($XY-$A)  D:\$($ASCII)__$SS_f.jpg" -ForegroundColor DarkBlue
     }
 
     if ("WebP-lossless" -in $Mode)
     {
-        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.png -lossless 1 D:\$ASCII'__'$SS_f.webp
+        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.bmp -lossless 1 D:\$ASCII'__'$SS_f.webp
         Write-Host "$($XY-$A)  D:\$($ASCII)__$SS_f.webp" -ForegroundColor DarkMagenta
     }
     
@@ -120,7 +120,7 @@ if ("Tile" -in $Mode)
 {
     $Width = [math]::Min(($W+8)*$X-8,$Width)
 
-    ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'%3d.png -vf "tile=layout=$($X)x$($Y):padding=8,scale=$($Width):-2:flags=accurate_rnd+full_chroma_int+bitexact" -q 2 -pix_fmt yuvj420p D:\Tile_$ASCII.jpg
+    ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'%3d.bmp -vf "tile=layout=$($X)x$($Y):padding=8,scale=$($Width):-2:flags=accurate_rnd+full_chroma_int+bitexact" -q 2 -pix_fmt yuvj420p D:\Tile_$ASCII.jpg
     # 可调整贴片边距padding，默认8px
 
     Write-Host "D:\Tile_$ASCII.jpg" -ForegroundColor DarkGreen
@@ -128,7 +128,7 @@ if ("Tile" -in $Mode)
 
 
 
-Remove-Item $env:TEMP\$ASCII'__'*.png
+Remove-Item $env:TEMP\$ASCII'__'*.bmp
 
 
 
