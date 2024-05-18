@@ -47,9 +47,9 @@ if ($Frame_info -match 'Dolby Vision RPU Data')
     }
 }
 
-$HDR_Filter = "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=rgb24"
+$HDR_Filter = "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=bgr24"
 $DoVi_Filter = "hwupload,tonemap_opencl=tonemap=bt2390:desat=0:peak=100:format=nv12,hwdownload,format=nv12"
-$SDR2PNG_Filter = "zscale=min=709:rin=limited,format=gbrp,format=rgb24"
+$SDR2PNG_Filter = "zscale=min=709:rin=limited,format=gbrp,format=bgr24"
 $vf = "-vf"
 
 
