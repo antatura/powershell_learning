@@ -49,7 +49,7 @@ if ($Frame_info -match 'Dolby Vision RPU Data')
 
 $HDR_Filter = "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=bgr24"
 $DoVi_Filter = "hwupload,tonemap_opencl=tonemap=bt2390:desat=0:peak=100:format=nv12,hwdownload,format=nv12"
-$SDR2PNG_Filter = "zscale=min=709:rin=limited,format=gbrp,format=bgr24"
+#(deprecated)  $SDR2PNG_Filter = "zscale=min=709:rin=limited,format=gbrp,format=bgr24"
 $vf = "-vf"
 
 
@@ -76,7 +76,7 @@ for ($A=1; $A -le $XY; $A++)
     }
     elseif ($Timestamp)
     {
-        $Filters = $SDR2PNG_Filter + ',' + $TEXT_Filter
+        $Filters = $TEXT_Filter
     }
     elseif ($Frame_info -match 'bt2020')
     {
@@ -90,9 +90,9 @@ for ($A=1; $A -le $XY; $A++)
     }
     else
     {
-        $Filters = $SDR2PNG_Filter
+        Clear-Variable vf
     }
-    ffmpeg -y -v 16 $HW $Opencl -ss $SS -i $Video_FullName -frames:v 1 $vf $Filters $env:TEMP\$ASCII'__'$D3.bmp
+    ffmpeg -y -v 16 $HW $Opencl -ss $SS -i $Video_FullName -frames:v 1 $vf $Filters -sws_flags accurate_rnd+full_chroma_int+bitexact $env:TEMP\$ASCII'__'$D3.bmp
     
 
 
