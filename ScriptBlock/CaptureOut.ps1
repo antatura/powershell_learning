@@ -1,7 +1,7 @@
 ﻿param
 (
     $Video,
-    [ValidateSet("JPEG-91", "PNG", "WebP-lossless", "Tile")]$Mode,
+    [ValidateSet("JPEG-86", "PNG", "WebP-lossless", "Tile")]$Mode,
     [int]$Width=3840,
     [int]$X=4,
     [int]$Y=4,
@@ -16,7 +16,7 @@ if ($help -or !($Mode) -or !($Video))
     Write-Host -ForegroundColor Green " Example:     CaptureOut.ps1 -Video INPUT.mp4 -Mode PNG,Tile
                                      `r -----------------------------------------------------------
                                      `r -Video:      Video's path
-                                     `r -Mode:       JPEG-91, PNG, WebP-lossless, Tile
+                                     `r -Mode:       JPEG-86, PNG, WebP-lossless, Tile
                                      `r -Timestamp:  Show timestamp in the lower left corner
                                      `r -Width:      Pixel width of the final tile (Default: 3840)
                                      `r -X:          X-COLUMNS (Default: 4)
@@ -102,9 +102,9 @@ for ($A=1; $A -le $XY; $A++)
         Write-Host "$($XY-$A)  D:\$($ASCII)__$SS_f.png" -ForegroundColor DarkCyan
     }
 
-    if ("JPEG-91" -in $Mode)
+    if ("JPEG-86" -in $Mode)
     {
-        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.bmp -sws_flags accurate_rnd+full_chroma_int+bitexact -q 2 -pix_fmt yuvj420p D:\$ASCII'__'$SS_f.jpg
+        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.bmp -sws_flags accurate_rnd+full_chroma_int+bitexact -q 3 -pix_fmt yuvj420p D:\$ASCII'__'$SS_f.jpg
         Write-Host "$($XY-$A)  D:\$($ASCII)__$SS_f.jpg" -ForegroundColor DarkBlue
     }
 
@@ -120,7 +120,7 @@ if ("Tile" -in $Mode)
 {
     $Width = [math]::Min(($W+8)*$X-8,$Width)
 
-    ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'%3d.bmp -vf "tile=layout=$($X)x$($Y):padding=8,scale=$($Width):-2:flags=accurate_rnd+full_chroma_int+bitexact" -q 2 -pix_fmt yuvj420p D:\Tile_$ASCII.jpg
+    ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'%3d.bmp -vf "tile=layout=$($X)x$($Y):padding=8,scale=$($Width):-2:flags=accurate_rnd+full_chroma_int+bitexact" -q 3 -pix_fmt yuvj420p D:\Tile_$ASCII.jpg
     # 可调整贴片边距padding，默认8px
 
     Write-Host "D:\Tile_$ASCII.jpg" -ForegroundColor DarkGreen
