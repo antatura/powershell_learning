@@ -1,10 +1,11 @@
 ﻿param
 (
     $Video,
-    [ValidateSet("JPEG-86", "PNG", "WebP-lossless", "Tile")]$Mode,
+    [ValidateSet("JPEG-86", "PNG", "WebP-lossless", "Tile", "Compare")]$Mode,
     [int]$Width=3840,
     [int]$X=4,
     [int]$Y=4,
+    [string]$Suffix,
     [switch]$Timestamp,
     [switch]$help
 )
@@ -115,6 +116,12 @@ for ($A=1; $A -le $XY; $A++)
     {
         ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.bmp -lossless 1 D:\$ASCII'__'$SS_f.webp
         Write-Host "$($XY-$A)  D:\$($ASCII)__$SS_f.webp" -ForegroundColor DarkMagenta
+    }
+
+    if ("Compare" -in $Mode)
+    {
+        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.bmp -sws_flags accurate_rnd+full_chroma_int+bitexact -vf zscale=3840:-1:f=spline36 D:\$ASCII'__'$SS_f'__'$Suffix.bmp
+        Write-Host "$($XY-$A)  D:\$($ASCII)__$($SS_f)__$Suffix.bmp" -ForegroundColor DarkMagenta
     }
     
 }
