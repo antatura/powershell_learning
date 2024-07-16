@@ -5,7 +5,6 @@
     [int]$Width=3840,
     [int]$X=4,
     [int]$Y=4,
-    [string]$Suffix,
     [switch]$Timestamp,
     [switch]$help
 )
@@ -120,8 +119,8 @@ for ($A=1; $A -le $XY; $A++)
 
     if ("Compare" -in $Mode)
     {
-        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.bmp -sws_flags accurate_rnd+full_chroma_int+bitexact -vf zscale=3840:-1:f=spline36 D:\$ASCII'__'$SS_f'__'$Suffix.bmp
-        Write-Host "$($XY-$A)  D:\$($ASCII)__$($SS_f)__$Suffix.bmp" -ForegroundColor DarkMagenta
+        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.bmp -vf zscale=3840:-1:f=spline36 D:\$SS'__'$ASCII.bmp
+        Write-Host "$($XY-$A)  D:\$($SS)__$ASCII.bmp" -ForegroundColor DarkMagenta
     }
     
 }
