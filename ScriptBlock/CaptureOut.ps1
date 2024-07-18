@@ -65,62 +65,65 @@ for ($A=1; $A -le $XY; $A++)
 
     if ($Timestamp -and ($Frame_info -match 'bt2020'))
     {
-        $Filters = $HDR_Filter + ',' + $TEXT_Filter
+        $Filters = $HDR_Filter + ',' + $TEXT_Filter + ',' + 'showinfo'
     }
     elseif ($Timestamp -and ($Frame_info -match 'Dolby Vision RPU Data'))
     {
-        $Filters = $DoVi_Filter + ',' + $TEXT_Filter
+        $Filters = $DoVi_Filter + ',' + $TEXT_Filter + ',' + 'showinfo'
         $HW = '-init_hw_device'
         $Opencl = 'opencl:0'
     }
     elseif ($Timestamp)
     {
-        $Filters = $TEXT_Filter
+        $Filters = $TEXT_Filter + ',' + 'showinfo'
         $Colorspace = '-colorspace'
         $BT709 = 'bt709'
     }
     elseif ($Frame_info -match 'bt2020')
     {
-        $Filters = $HDR_Filter
+        $Filters = $HDR_Filter + ',' + 'showinfo'
     }
     elseif ($Frame_info -match 'Dolby Vision RPU Data')
     {
-        $Filters = $DoVi_Filter
+        $Filters = $DoVi_Filter + ',' + 'showinfo'
         $HW = '-init_hw_device'
         $Opencl = 'opencl:0'
     }
     else
     {
-        Clear-Variable vf
+        $Filters = 'showinfo'
         $Colorspace = '-colorspace'
         $BT709 = 'bt709'
     }
-    ffmpeg -y -v 16 $Colorspace $BT709 $HW $Opencl -ss $SS -i $Video_FullName -frames:v 1 $vf $Filters -sws_flags accurate_rnd+full_chroma_int+bitexact $env:TEMP\$ASCII'__'$D3.bmp
+
+    [string]$Showinfo = ffmpeg -y -hide_banner $Colorspace $BT709 $HW $Opencl -ss $SS -i $Video_FullName -frames:v 1 $vf $Filters -sws_flags accurate_rnd+full_chroma_int+bitexact $env:TEMP\$ASCII'__'$D3.bmp *>&1 | % {"$_"}
+
+    $pict_type = $Showinfo.Substring($Showinfo.IndexOf("type:")+5,1)
     
 
 
     if ("PNG" -in $Mode)
     {
-        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.bmp -pred 2 D:\$ASCII'__'$SS_f.png
-        Write-Host "$($XY-$A)  D:\$($ASCII)__$SS_f.png" -ForegroundColor DarkCyan
+        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.bmp -pred 2 D:\$ASCII'__'$SS_f'_'$pict_type.png
+        Write-Host "$($XY-$A)  D:\$($ASCII)__$($SS_f)_$pict_type.png" -ForegroundColor DarkCyan
     }
 
     if ("JPEG-86" -in $Mode)
     {
-        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.bmp -sws_flags accurate_rnd+full_chroma_int+bitexact -q 3 -pix_fmt yuvj420p D:\$ASCII'__'$SS_f.jpg
-        Write-Host "$($XY-$A)  D:\$($ASCII)__$SS_f.jpg" -ForegroundColor DarkBlue
+        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.bmp -sws_flags accurate_rnd+full_chroma_int+bitexact -q 3 -pix_fmt yuvj420p D:\$ASCII'__'$SS_f'_'$pict_type.jpg
+        Write-Host "$($XY-$A)  D:\$($ASCII)__$($SS_f)_$pict_type.jpg" -ForegroundColor DarkBlue
     }
 
     if ("WebP-lossless" -in $Mode)
     {
-        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.bmp -lossless 1 D:\$ASCII'__'$SS_f.webp
-        Write-Host "$($XY-$A)  D:\$($ASCII)__$SS_f.webp" -ForegroundColor DarkMagenta
+        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.bmp -lossless 1 D:\$ASCII'__'$SS_f'_'$pict_type.webp
+        Write-Host "$($XY-$A)  D:\$($ASCII)__$($SS_f)_$pict_type.webp" -ForegroundColor DarkMagenta
     }
 
     if ("Compare" -in $Mode)
     {
-        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.bmp -vf zscale=3840:-1:f=spline36 D:\$SS'__'$ASCII.bmp
-        Write-Host "$($XY-$A)  D:\$($SS)__$ASCII.bmp" -ForegroundColor DarkMagenta
+        ffmpeg -y -v 16 -i $env:TEMP\$ASCII'__'$D3.bmp -vf zscale=3840:-1:f=point D:\$SS_f'_'$pict_type'__'$ASCII.bmp
+        Write-Host "$($XY-$A)  D:\$($SS_f)_$($pict_type)__$ASCII.bmp" -ForegroundColor DarkMagenta
     }
     
 }
